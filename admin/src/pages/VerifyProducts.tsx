@@ -10,7 +10,7 @@ interface Product {
   highlights?: string;
   images: string[];
   price: number;
-  discountPrice?: number;
+  mrp?: number;
   stock: number;
   unit: string;
   status: string;
@@ -149,7 +149,10 @@ export default function VerifyProducts() {
                             <div style={{ fontSize: 12, color: '#888' }}>{p.vendor?.farmName}</div>
                           </td>
                           <td>
-                            <div style={{ fontWeight: 700, color: 'var(--green-600)' }}>₹{p.price}</div>
+                            <div style={{ fontWeight: 700, color: 'var(--green-600)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              {p.mrp && <span style={{ fontSize: 11, textDecoration: 'line-through', color: '#999', fontWeight: 500 }}>₹{p.mrp}</span>}
+                              ₹{p.price}
+                            </div>
                             <div style={{ fontSize: 12, color: '#888' }}>{p.stock} {p.unit}</div>
                           </td>
                           <td style={{ fontSize: 13 }}>
@@ -215,9 +218,9 @@ export default function VerifyProducts() {
                   <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--green-600)', marginBottom: 8 }}>📦 Product Details</div>
                   <div style={{ fontSize: 14, marginBottom: 8 }}><strong>Description:</strong><br /><span style={{ color: '#555' }}>{selected.description}</span></div>
                   {selected.highlights && <div style={{ fontSize: 14, marginBottom: 8 }}><strong>Highlights:</strong><br /><span style={{ color: '#555' }}>{selected.highlights}</span></div>}
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-                    <span style={{ background: '#E8F5E9', color: 'var(--green-600)', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>₹{selected.price}</span>
-                    {selected.discountPrice && <span style={{ background: '#FFF3E0', color: 'var(--orange-dark)', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>Discount: ₹{selected.discountPrice}</span>}
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, alignItems: 'center' }}>
+                    {selected.mrp && <span style={{ background: '#f5f5f5', color: '#999', padding: '4px 10px', borderRadius: 6, fontSize: 13, textDecoration: 'line-through', fontWeight: 500 }}>MRP: ₹{selected.mrp}</span>}
+                    <span style={{ background: '#E8F5E9', color: 'var(--green-600)', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>Selling: ₹{selected.price}</span>
                     <span style={{ background: '#F5F5F5', color: '#555', padding: '4px 10px', borderRadius: 6, fontSize: 13 }}>{selected.stock} {selected.unit}</span>
                   </div>
                   {selected.tags?.length > 0 && (

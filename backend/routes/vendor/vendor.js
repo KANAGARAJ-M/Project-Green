@@ -96,14 +96,14 @@ router.post('/products', vendorAuth, (req, res) => {
   productUpload(req, res, async (err) => {
     if (err) return res.status(400).json({ success: false, message: err.message });
     try {
-      const { name, description, highlights, unit, price, discountPrice, stock, category, subCategory, tags } = req.body;
+      const { name, description, highlights, unit, price, mrp, stock, category, subCategory, tags } = req.body;
       const images = (req.files || []).map(f => `/media/products/${path.basename(f.path)}`);
 
       const product = await Product.create({
         vendor: req.vendor._id,
         name, description, highlights, unit,
         price: parseFloat(price),
-        discountPrice: discountPrice ? parseFloat(discountPrice) : undefined,
+        mrp: mrp ? parseFloat(mrp) : undefined,
         stock: parseInt(stock),
         category, subCategory: subCategory || undefined,
         tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
@@ -126,7 +126,7 @@ router.put('/products/:id', vendorAuth, (req, res) => {
       const product = await Product.findOne({ _id: req.params.id, vendor: req.vendor._id });
       if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
-      const { name, description, highlights, unit, price, discountPrice, stock, category, subCategory, tags, existingImages } = req.body;
+      const { name, description, highlights, unit, price, mrp, stock, category, subCategory, tags, existingImages } = req.body;
       const newImages = (req.files || []).map(f => `/media/products/${path.basename(f.path)}`);
       const kept = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
       const images = [...kept, ...newImages].slice(0, 10);
@@ -134,17 +134,17 @@ router.put('/products/:id', vendorAuth, (req, res) => {
       Object.assign(product, {
         name, description, highlights, unit,
         price: parseFloat(price),
-        discountPrice: discountPrice ? parseFloat(discountPrice) : undefined,
+        mrp: mrp ? parseFloat(mrp) : undefined,
         stock: parseInt(stock),
         category, subCategory: subCategory || undefined,
         tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
         images,
-        status: 'pending', // re-submit for review
+        // status remains unchanged
         rejectionRemark: undefined,
       });
 
       await product.save();
-      res.json({ success: true, message: 'Product updated and resubmitted for review', product });
+      res.json({ success: true, message: 'Product updated successfully', product });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
     }

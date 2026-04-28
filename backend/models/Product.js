@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
   images: [{ type: String }], // up to 10, first image on white bg
   unit: { type: String, required: true, enum: ['g', 'kg', 'ml', 'l', 'pcs', 'pack', 'ton', 'dozen', 'bundle'] },
   price: { type: Number, required: true, min: 0 },
-  discountPrice: { type: Number, min: 0 },
+  mrp: { type: Number, min: 0 },
   stock: { type: Number, required: true, min: 0 },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
   subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory' },

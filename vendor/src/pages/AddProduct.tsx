@@ -12,7 +12,7 @@ interface SubCat { _id: string; name: string; category: string; }
 export default function AddProduct() {
   const [form, setForm] = useState({
     name: '', description: '', highlights: '',
-    unit: 'kg', price: '', discountPrice: '', stock: '',
+    unit: 'kg', price: '', mrp: '', stock: '',
     category: '', subCategory: '',
   });
   const [tags, setTags] = useState<string[]>([]);
@@ -119,12 +119,12 @@ export default function AddProduct() {
                 <div className="card-body">
                   <div className="form-grid-3">
                     <div className="form-group">
-                      <label className="form-label required">Price (₹)</label>
-                      <input className="form-control" type="number" min="0" step="0.01" value={form.price} onChange={e => setField('price', e.target.value)} placeholder="0.00" required />
+                      <label className="form-label">MRP (₹)</label>
+                      <input className="form-control" type="number" min="0" step="0.01" value={form.mrp} onChange={e => setField('mrp', e.target.value)} placeholder="0.00" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Discount Price (₹)</label>
-                      <input className="form-control" type="number" min="0" step="0.01" value={form.discountPrice} onChange={e => setField('discountPrice', e.target.value)} placeholder="Optional" />
+                      <label className="form-label required">Selling Price (₹)</label>
+                      <input className="form-control" type="number" min="0" step="0.01" value={form.price} onChange={e => setField('price', e.target.value)} placeholder="0.00" required />
                     </div>
                     <div className="form-group">
                       <label className="form-label required">Unit</label>

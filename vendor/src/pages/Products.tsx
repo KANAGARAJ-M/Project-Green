@@ -8,7 +8,7 @@ interface Product {
   _id: string;
   name: string;
   price: number;
-  discountPrice?: number;
+  mrp?: number;
   stock: number;
   unit: string;
   status: string;
@@ -134,8 +134,10 @@ export default function Products() {
                           </td>
                           <td style={{ fontSize: 13, color: '#666' }}>{p.category?.name || '-'}</td>
                           <td>
-                            <div style={{ fontWeight: 700, color: 'var(--green-600)' }}>₹{p.price}</div>
-                            {p.discountPrice && <div style={{ fontSize: 12, textDecoration: 'line-through', color: '#aaa' }}>₹{p.discountPrice}</div>}
+                            <div style={{ fontWeight: 700, color: 'var(--green-600)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              {p.mrp && <span style={{ fontSize: 12, textDecoration: 'line-through', color: '#999', fontWeight: 500 }}>₹{p.mrp}</span>}
+                              ₹{p.price}
+                            </div>
                           </td>
                           <td style={{ fontSize: 13 }}>{p.stock} {p.unit}</td>
                           <td><span className={`badge badge-${p.status}`}>{p.status}</span></td>

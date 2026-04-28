@@ -11,7 +11,7 @@ export default function EditProduct() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [form, setForm] = useState({ name: '', description: '', highlights: '', unit: 'kg', price: '', discountPrice: '', stock: '', category: '', subCategory: '' });
+  const [form, setForm] = useState({ name: '', description: '', highlights: '', unit: 'kg', price: '', mrp: '', stock: '', category: '', subCategory: '' });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -36,7 +36,7 @@ export default function EditProduct() {
       API.get('/shared/subcategories'),
     ]).then(([prod, cats, subs]) => {
       const p = prod.data.product;
-      setForm({ name: p.name, description: p.description, highlights: p.highlights || '', unit: p.unit, price: String(p.price), discountPrice: p.discountPrice ? String(p.discountPrice) : '', stock: String(p.stock), category: p.category?._id || '', subCategory: p.subCategory?._id || '' });
+      setForm({ name: p.name, description: p.description, highlights: p.highlights || '', unit: p.unit, price: String(p.price), mrp: p.mrp ? String(p.mrp) : '', stock: String(p.stock), category: p.category?._id || '', subCategory: p.subCategory?._id || '' });
       setTags(p.tags || []);
       setExistingImages(p.images || []);
       setCategories(cats.data.categories);
@@ -62,7 +62,7 @@ export default function EditProduct() {
 
     try {
       await API.put(`/vendor/products/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      toast.success('Product updated and resubmitted for review!');
+      toast.success('Product updated successfully!');
       navigate('/products');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -86,7 +86,7 @@ export default function EditProduct() {
           <button className="btn btn-ghost btn-sm" onClick={() => navigate(-1)}><ChevronLeft size={16} />Back</button>
           <div>
             <div className="topbar-title">Edit Product</div>
-            <div className="topbar-subtitle">Editing will resubmit for admin review</div>
+            <div className="topbar-subtitle">Changes apply immediately to your live products</div>
           </div>
         </div>
       </div>
@@ -118,12 +118,12 @@ export default function EditProduct() {
                 <div className="card-body">
                   <div className="form-grid-3">
                     <div className="form-group">
-                      <label className="form-label required">Price (₹)</label>
-                      <input className="form-control" type="number" min="0" value={form.price} onChange={e => setField('price', e.target.value)} required />
+                      <label className="form-label">MRP (₹)</label>
+                      <input className="form-control" type="number" min="0" step="0.01" value={form.mrp} onChange={e => setField('mrp', e.target.value)} placeholder="0.00" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Discount Price (₹)</label>
-                      <input className="form-control" type="number" min="0" value={form.discountPrice} onChange={e => setField('discountPrice', e.target.value)} />
+                      <label className="form-label required">Selling Price (₹)</label>
+                      <input className="form-control" type="number" min="0" step="0.01" value={form.price} onChange={e => setField('price', e.target.value)} required placeholder="0.00" />
                     </div>
                     <div className="form-group">
                       <label className="form-label required">Unit</label>
