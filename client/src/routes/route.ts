@@ -1,0 +1,1 @@
+// Here mention all the dynamic routes links like /product/productID, /category(name)/subcategory(name)/product/productid
