@@ -9,7 +9,7 @@ let stateIndex = {}; // { state: { district: [{ city, pincode }] } }
 let statesList = [];
 
 try {
-  const raw = fs.readFileSync(path.join(__dirname, '../../asset/loca.json'), 'utf-8');
+  const raw = fs.readFileSync(path.join(__dirname, '../asset/loca.json'), 'utf-8');
   records = JSON.parse(raw).records;
 
   records.forEach(r => {

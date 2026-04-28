@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Leaf, ChevronRight, ChevronLeft, Mail, Phone, ShieldCheck } from 'lucide-react';
+import { Leaf, ChevronRight, ChevronLeft, Mail, Phone, ShieldCheck, MapPin } from 'lucide-react';
 import API from '../api';
 import AddressSelect from '../components/AddressSelect';
+import MapPicker from '../components/MapPicker';
 
 // Step order: Personal → Verify OTP → Farm → Bank → Documents
 const STEPS = ['Personal', 'Verify', 'Farm', 'Bank', 'Documents'];
@@ -20,6 +21,10 @@ export default function Register() {
   const [emailOtp, setEmailOtp] = useState('');
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneDemo, setPhoneDemo] = useState(false);
+
+  // Map picker
+  const [showMap, setShowMap] = useState(false);
+  const [mapAddress, setMapAddress] = useState('');
 
   // Form state
   const [form, setForm] = useState({
@@ -56,6 +61,7 @@ export default function Register() {
     if (!form.state) { toast.error('Please select a State'); return false; }
     if (!form.district) { toast.error('Please select a District'); return false; }
     if (!form.city) { toast.error('Please select a City / Village'); return false; }
+    if (!form.mapLat || !form.mapLng) { toast.error('Please pin your farm location on the map'); return false; }
     return true;
   };
 
@@ -148,6 +154,19 @@ export default function Register() {
   );
 
   return (
+    <>
+    {showMap && (
+      <MapPicker
+        lat={form.mapLat}
+        lng={form.mapLng}
+        onConfirm={(lt, ln, addr) => {
+          setField('mapLat', lt);
+          setField('mapLng', ln);
+          setMapAddress(addr || '');
+        }}
+        onClose={() => setShowMap(false)}
+      />
+    )}
     <div className="auth-page" style={{ alignItems: 'flex-start', paddingTop: 32, paddingBottom: 32 }}>
       {/* ── Square card ── */}
       <div className="auth-card" style={{ maxWidth: 660, borderRadius: 0 }}>
@@ -231,17 +250,32 @@ export default function Register() {
                 </div>
               </div>
 
-              <div style={{ fontWeight: 700, fontSize: 15, margin: '8px 0 16px', color: 'var(--green-600)' }}>🗺️ Map Location (Optional)</div>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label className="form-label">Latitude</label>
-                  <input className="form-control" style={{ borderRadius: 4 }} type="number" value={form.mapLat} onChange={e => setField('mapLat', e.target.value)} placeholder="11.0168" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Longitude</label>
-                  <input className="form-control" style={{ borderRadius: 4 }} type="number" value={form.mapLng} onChange={e => setField('mapLng', e.target.value)} placeholder="76.9558" />
-                </div>
+              <div style={{ fontWeight: 700, fontSize: 15, margin: '16px 0 12px', color: 'var(--green-600)' }}>
+                🗺️ Farm Map Location <span style={{ color: '#e53935', fontSize: 13 }}>*</span>
               </div>
+
+              {form.mapLat && form.mapLng ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: '#E8F5E9', borderRadius: 4, border: '1.5px solid var(--green-500)', marginBottom: 4 }}>
+                  <MapPin size={20} color="var(--green-600)" />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--green-600)' }}>📍 Location Pinned</div>
+                    <div style={{ fontSize: 12, color: '#555', fontFamily: 'monospace' }}>{parseFloat(form.mapLat).toFixed(5)}, {parseFloat(form.mapLng).toFixed(5)}</div>
+                    {mapAddress && <div style={{ fontSize: 12, color: '#777', marginTop: 2, lineHeight: 1.4 }}>{mapAddress}</div>}
+                  </div>
+                  <button onClick={() => setShowMap(true)} style={{ padding: '6px 14px', background: 'var(--green-600)', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>Change</button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => setShowMap(true)}
+                  style={{ border: '2px dashed var(--green-500)', borderRadius: 4, padding: '20px 16px', textAlign: 'center', cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#f0fdf4'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
+                >
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>🗺️</div>
+                  <div style={{ fontWeight: 700, color: 'var(--green-600)', fontSize: 14 }}>Open Map & Pin Location</div>
+                  <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>Click to open interactive map • Click on map or use GPS to pin your farm</div>
+                </div>
+              )}
             </>
           )}
 
@@ -472,5 +506,6 @@ export default function Register() {
         </div>
       </div>
     </div>
+    </>
   );
 }
