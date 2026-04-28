@@ -23,6 +23,7 @@ app.use('/api/vendor', require('./routes/vendor/vendor'));
 app.use('/api/auth/admin', require('./routes/admin/auth'));
 app.use('/api/admin', require('./routes/admin/admin'));
 app.use('/api/shared', require('./routes/shared'));
+app.use('/api/location', require('./routes/location'));
 
 // Connect DB
 mongoose.connect(process.env.MONGO_DB_URI, { dbName: process.env.DB_NAME })

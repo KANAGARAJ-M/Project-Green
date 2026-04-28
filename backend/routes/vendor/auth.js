@@ -8,6 +8,75 @@ const { vendorRegisterUpload } = require('../../middleware/upload');
 const { sendVendorApprovedEmail, sendOtpEmail } = require('../../utils/email');
 const path = require('path');
 
+// Temporary in-memory OTP store for pre-registration (no account yet)
+// { email: { emailOtp, phoneOtp, expiry, emailVerified, phoneVerified } }
+const regOtpStore = new Map();
+
+// POST /api/auth/vendor/send-reg-otp
+router.post('/send-reg-otp', async (req, res) => {
+  try {
+    const { email, phone } = req.body;
+    if (!email || !phone) return res.status(400).json({ success: false, message: 'Email and phone required' });
+
+    // Check not already registered
+    const existing = await Vendor.findOne({ email });
+    if (existing) return res.status(400).json({ success: false, message: 'Email already registered' });
+
+    const emailOtp = generateOtp();
+    const phoneOtp = process.env.PHONE_OTP_DEMO === 'True'
+      ? (process.env.PHONE_OTP || '1463')   // demo mode: fixed pin
+      : generateOtp();
+
+    regOtpStore.set(email, {
+      emailOtp,
+      phoneOtp,
+      phone,
+      expiry: new Date(Date.now() + 10 * 60 * 1000),
+      emailVerified: false,
+      phoneVerified: false,
+    });
+
+    // Send email OTP
+    await sendOtpEmail(email, emailOtp);
+
+    // Phone OTP: in demo mode just log it; in production call SMS API here
+    if (process.env.PHONE_OTP_DEMO === 'True') {
+      console.log(`[DEMO] Phone OTP for ${phone}: ${phoneOtp}`);
+    }
+
+    res.json({
+      success: true,
+      message: 'OTPs sent to your email and phone',
+      phoneDemo: process.env.PHONE_OTP_DEMO === 'True',
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/auth/vendor/verify-reg-otp
+router.post('/verify-reg-otp', (req, res) => {
+  const { email, emailOtp, phoneOtp } = req.body;
+  const entry = regOtpStore.get(email);
+
+  if (!entry) return res.status(400).json({ success: false, message: 'No OTP found. Please request a new one.' });
+  if (new Date() > entry.expiry) {
+    regOtpStore.delete(email);
+    return res.status(400).json({ success: false, message: 'OTP expired. Request a new one.' });
+  }
+
+  const errors = [];
+  if (entry.emailOtp !== String(emailOtp)) errors.push('email');
+  if (entry.phoneOtp !== String(phoneOtp)) errors.push('phone');
+
+  if (errors.length > 0) {
+    return res.status(400).json({ success: false, message: `Invalid OTP for: ${errors.join(' & ')}` });
+  }
+
+  regOtpStore.delete(email);
+  res.json({ success: true, message: 'Both OTPs verified successfully' });
+});
+
 // Helper: generate OTP
 const generateOtp = () => Math.floor(1000 + Math.random() * 9000).toString();
 
