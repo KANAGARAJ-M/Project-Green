@@ -108,14 +108,14 @@ router.post('/register', (req, res, next) => {
 
       // File paths
       const files = req.files || {};
-      const farmImages = (files.farmImages || []).map(f => `/media/farm_images/${path.basename(f.path)}`);
-      const farmLogo = files.farmLogo?.[0] ? `/media/farm_logos/${path.basename(files.farmLogo[0].path)}` : null;
-      const addressProofImage = files.addressProofImage?.[0] ? `/media/documents/${path.basename(files.addressProofImage[0].path)}` : null;
-      const pattaChitta = files.pattaChitta?.[0] ? `/media/documents/${path.basename(files.pattaChitta[0].path)}` : null;
-      const landOwnership = files.landOwnership?.[0] ? `/media/documents/${path.basename(files.landOwnership[0].path)}` : null;
-      const leaseAgreement = files.leaseAgreement?.[0] ? `/media/documents/${path.basename(files.leaseAgreement[0].path)}` : null;
-      const farmerIdCard = files.farmerIdCard?.[0] ? `/media/documents/${path.basename(files.farmerIdCard[0].path)}` : null;
-      const organicCertification = files.organicCertification?.[0] ? `/media/documents/${path.basename(files.organicCertification[0].path)}` : null;
+      const farmImages = (files.farmImages || []).map(f => mediaPath(f));
+      const farmLogo = mediaPath(files.farmLogo?.[0]);
+      const addressProofImage = mediaPath(files.addressProofImage?.[0]);
+      const pattaChitta = mediaPath(files.pattaChitta?.[0]);
+      const landOwnership = mediaPath(files.landOwnership?.[0]);
+      const leaseAgreement = mediaPath(files.leaseAgreement?.[0]);
+      const farmerIdCard = mediaPath(files.farmerIdCard?.[0]);
+      const organicCertification = mediaPath(files.organicCertification?.[0]);
 
       const vendor = await Vendor.create({
         name, email, phone, password: hashed,
