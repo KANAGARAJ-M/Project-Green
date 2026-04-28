@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ChevronLeft } from 'lucide-react';
@@ -16,9 +16,16 @@ export default function EditProduct() {
   const [tagInput, setTagInput] = useState('');
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [subCats, setSubCats] = useState<any[]>([]);
-  const [filteredSubs, setFilteredSubs] = useState<any[]>([]);
+  const [categories, setCategories] = useState<{_id: string, name: string}[]>([]);
+  const [subCats, setSubCats] = useState<{_id: string, name: string, category: string | {_id: string}}[]>([]);
+  
+  const filteredSubs = useMemo(() => {
+    if (!form.category) return [];
+    return subCats.filter(s => {
+      const catId = typeof s.category === 'object' ? s.category._id : s.category;
+      return catId === form.category;
+    });
+  }, [form.category, subCats]);
   const imgRef = useRef<HTMLInputElement>(null);
   const setField = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -37,10 +44,7 @@ export default function EditProduct() {
     }).finally(() => setFetching(false));
   }, [id]);
 
-  useEffect(() => {
-    if (form.category) setFilteredSubs(subCats.filter((s: any) => s.category === form.category || s.category?._id === form.category));
-    else setFilteredSubs([]);
-  }, [form.category, subCats]);
+  // Removed useEffect for SubCategory filtering since we now use useMemo
 
   const addTag = () => {
     const t = tagInput.trim();
@@ -60,8 +64,9 @@ export default function EditProduct() {
       await API.put(`/vendor/products/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.success('Product updated and resubmitted for review!');
       navigate('/products');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Update failed');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || 'Update failed');
     } finally {
       setLoading(false);
     }
@@ -199,7 +204,7 @@ export default function EditProduct() {
                     <label className="form-label required">Category</label>
                     <select className="form-control form-select" value={form.category} onChange={e => { setField('category', e.target.value); setField('subCategory', ''); }} required>
                       <option value="">Select category</option>
-                      {categories.map((c: any) => <option key={c._id} value={c._id}>{c.name}</option>)}
+                      {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                     </select>
                   </div>
                   {filteredSubs.length > 0 && (
@@ -207,7 +212,7 @@ export default function EditProduct() {
                       <label className="form-label">Sub Category</label>
                       <select className="form-control form-select" value={form.subCategory} onChange={e => setField('subCategory', e.target.value)}>
                         <option value="">None</option>
-                        {filteredSubs.map((s: any) => <option key={s._id} value={s._id}>{s.name}</option>)}
+                        {filteredSubs.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                       </select>
                     </div>
                   )}

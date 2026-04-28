@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Upload, X, ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import API from '../api';
 
 const UNITS = ['g', 'kg', 'ml', 'l', 'pcs', 'pack', 'ton', 'dozen', 'bundle'];
@@ -20,7 +20,17 @@ export default function AddProduct() {
   const [images, setImages] = useState<File[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCats, setSubCats] = useState<SubCat[]>([]);
-  const [filteredSubs, setFilteredSubs] = useState<SubCat[]>([]);
+  
+  // Derived state to avoid setState-in-effect lint
+  const filteredSubs = useMemo(() => {
+    if (!form.category) return [];
+    return subCats.filter(s => {
+      // Handle populated category object
+      const catId = typeof s.category === 'object' ? (s.category as { _id: string })._id : s.category;
+      return catId === form.category;
+    });
+  }, [form.category, subCats]);
+
   const [loading, setLoading] = useState(false);
   const imgRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -31,10 +41,7 @@ export default function AddProduct() {
     API.get('/shared/subcategories').then(r => setSubCats(r.data.subcategories));
   }, []);
 
-  useEffect(() => {
-    if (form.category) setFilteredSubs(subCats.filter(s => s.category === form.category));
-    else setFilteredSubs([]);
-  }, [form.category, subCats]);
+  // Remove old useEffect since we use useMemo now
 
   const addTag = () => {
     const t = tagInput.trim();
@@ -63,8 +70,9 @@ export default function AddProduct() {
       await API.post('/vendor/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.success('Product submitted for admin review!');
       navigate('/products');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to submit product');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || 'Failed to submit product');
     } finally {
       setLoading(false);
     }
