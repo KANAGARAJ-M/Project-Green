@@ -8,6 +8,7 @@ import Products from './pages/Products';
 import AddProduct from './pages/AddProduct';
 import EditProduct from './pages/EditProduct';
 import Profile from './pages/Profile';
+import ShopProfile from './pages/ShopProfile';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('vendor_token');
@@ -28,6 +29,7 @@ function App() {
           <Route path="products/add" element={<AddProduct />} />
           <Route path="products/edit/:id" element={<EditProduct />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="shop-profile" element={<ShopProfile />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

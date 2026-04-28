@@ -172,4 +172,24 @@ router.get('/profile', vendorAuth, async (req, res) => {
   }
 });
 
+// PUT /api/vendor/shop-profile
+router.put('/shop-profile', vendorAuth, async (req, res) => {
+  try {
+    const { farmName, shopDescription } = req.body;
+    if (!farmName) return res.status(400).json({ success: false, message: 'Farm name is required' });
+    
+    // In future this endpoint could also handle updating the logo using multer,
+    // but for now we'll just handle text metadata.
+    const vendor = await Vendor.findByIdAndUpdate(
+      req.vendor._id, 
+      { farmName, shopDescription }, 
+      { new: true }
+    ).select('-password -otp -otpExpiry');
+    
+    res.json({ success: true, message: 'Shop profile updated successfully', vendor });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;

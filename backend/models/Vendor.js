@@ -24,6 +24,7 @@ const vendorSchema = new mongoose.Schema({
   farmType: { type: String, enum: ['organic', 'conventional', 'mixed'], required: true },
   farmImages: [{ type: String }], // up to 3 paths
   farmLogo: { type: String }, // optional 1 image
+  shopDescription: { type: String }, // public shop about section
 
   // Bank
   bankName: { type: String, required: true },
